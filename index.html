@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>天气卡片</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="page">
+      <section class="card">
+        <div class="top">
+          <div>
+            <h1 id="city">哈尔滨</h1>
+            <p id="time">--:--</p>
+          </div>
+          <button id="refreshBtn">刷新</button>
+        </div>
+
+        <div class="now">
+          <div class="temp"><span id="temp">--</span>°C</div>
+          <div class="meta">
+            <p id="desc">加载中...</p>
+            <p>体感：<span id="feel">--</span>°C</p>
+            <p>湿度：<span id="humidity">--</span>%</p>
+            <p>风速：<span id="wind">--</span> km/h</p>
+          </div>
+        </div>
+
+        <div class="forecast" id="forecast"></div>
+
+        <p class="footer">数据源：Open-Meteo · 自动更新</p>
+      </section>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
