@@ -1,38 +1,217 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-CN">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>天气卡片</title>
-    <link rel="stylesheet" href="styles.css" />
-  </head>
-  <body>
-    <main class="page">
-      <section class="card">
-        <div class="top">
-          <div>
-            <h1 id="city">哈尔滨</h1>
-            <p id="time">--:--</p>
-          </div>
-          <button id="refreshBtn">刷新</button>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Card - 精致天气</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="weather-bg" id="weatherBg"></div>
+    <div class="particles" id="particles"></div>
+    
+    <div class="container">
+        <!-- 主题切换 -->
+        <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+            <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="5"/>
+                <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+            </svg>
+            <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+            </svg>
+        </button>
+
+        <!-- 搜索区域 -->
+        <div class="search-section">
+            <div class="search-box">
+                <input type="text" id="cityInput" placeholder="输入城市名称..." autocomplete="off">
+                <button class="search-btn" id="searchBtn" aria-label="搜索">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"/>
+                        <path d="m21 21-4.35-4.35"/>
+                    </svg>
+                </button>
+                <button class="location-btn" id="locationBtn" aria-label="定位">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                        <circle cx="12" cy="10" r="3"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="error-msg" id="errorMsg"></div>
         </div>
 
-        <div class="now">
-          <div class="temp"><span id="temp">--</span>°C</div>
-          <div class="meta">
-            <p id="desc">加载中...</p>
-            <p>体感：<span id="feel">--</span>°C</p>
-            <p>湿度：<span id="humidity">--</span>%</p>
-            <p>风速：<span id="wind">--</span> km/h</p>
-          </div>
+        <!-- 主天气卡片 -->
+        <div class="main-card" id="mainCard">
+            <div class="loading-overlay" id="loadingOverlay">
+                <div class="spinner"></div>
+            </div>
+            
+            <div class="card-header">
+                <div class="location-info">
+                    <h1 class="city-name" id="cityName">--</h1>
+                    <p class="country-name" id="countryName">--</p>
+                </div>
+                <div class="datetime">
+                    <p class="date" id="currentDate">--</p>
+                    <p class="time" id="currentTime">--</p>
+                </div>
+            </div>
+
+            <div class="weather-main">
+                <div class="weather-icon-container" id="weatherIcon">
+                    <!-- 动态插入天气图标 -->
+                </div>
+                <div class="temperature-section">
+                    <span class="temperature" id="temperature">--</span>
+                    <span class="temp-unit">°C</span>
+                </div>
+                <p class="weather-desc" id="weatherDesc">--</p>
+                <p class="comfort-tip" id="comfortTip">--</p>
+            </div>
+
+            <div class="temp-range">
+                <span class="temp-high">最高 <strong id="tempHigh">--</strong>°</span>
+                <span class="temp-low">最低 <strong id="tempLow">--</strong>°</span>
+            </div>
+
+            <div class="weather-details">
+                <div class="detail-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
+                    </svg>
+                    <span class="detail-label">体感</span>
+                    <span class="detail-value" id="feelsLike">--°</span>
+                </div>
+                <div class="detail-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2v20M2 12h20"/>
+                    </svg>
+                    <span class="detail-label">湿度</span>
+                    <span class="detail-value" id="humidity">--%</span>
+                </div>
+                <div class="detail-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"/>
+                    </svg>
+                    <span class="detail-label">风速</span>
+                    <span class="detail-value" id="windSpeed">-- km/h</span>
+                </div>
+                <div class="detail-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M12 6v6l4 2"/>
+                    </svg>
+                    <span class="detail-label">气压</span>
+                    <span class="detail-value" id="pressure">-- hPa</span>
+                </div>
+                <div class="detail-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M2 12s4-8 10-8 10 8 10 8-4 8-10 8-10-8-10-8z"/>
+                        <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                    <span class="detail-label">能见度</span>
+                    <span class="detail-value" id="visibility">-- km</span>
+                </div>
+                <div class="detail-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="5"/>
+                        <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+                    </svg>
+                    <span class="detail-label">紫外线</span>
+                    <span class="detail-value" id="uvIndex">--</span>
+                </div>
+            </div>
+
+            <div class="sun-times">
+                <div class="sun-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2v8M12 2l-3 3M12 2l3 3"/>
+                        <path d="M5 12h14"/>
+                        <path d="M12 18a6 6 0 0 0 6-6"/>
+                        <path d="M12 18a6 6 0 0 1-6-6"/>
+                    </svg>
+                    <div>
+                        <span class="sun-label">日出</span>
+                        <span class="sun-value" id="sunrise">--:--</span>
+                    </div>
+                </div>
+                <div class="sun-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 14v8M12 22l-3-3M12 22l3-3"/>
+                        <path d="M5 12h14"/>
+                        <path d="M12 6a6 6 0 0 1 6 6"/>
+                        <path d="M12 6a6 6 0 0 0-6 6"/>
+                    </svg>
+                    <div>
+                        <span class="sun-label">日落</span>
+                        <span class="sun-value" id="sunset">--:--</span>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div class="forecast" id="forecast"></div>
+        <!-- AQI 模块 -->
+        <div class="aqi-card" id="aqiCard">
+            <div class="aqi-header">
+                <h3>空气质量</h3>
+                <span class="aqi-badge" id="aqiBadge">--</span>
+            </div>
+            <div class="aqi-main">
+                <div class="aqi-value-section">
+                    <span class="aqi-value" id="aqiValue">--</span>
+                    <span class="aqi-level" id="aqiLevel">--</span>
+                </div>
+                <div class="aqi-advice" id="aqiAdvice">--</div>
+            </div>
+            <div class="aqi-details">
+                <div class="aqi-item">
+                    <span class="aqi-label">PM2.5</span>
+                    <div class="aqi-bar">
+                        <div class="aqi-bar-fill" id="pm25Bar"></div>
+                    </div>
+                    <span class="aqi-num" id="pm25">--</span>
+                </div>
+                <div class="aqi-item">
+                    <span class="aqi-label">PM10</span>
+                    <div class="aqi-bar">
+                        <div class="aqi-bar-fill" id="pm10Bar"></div>
+                    </div>
+                    <span class="aqi-num" id="pm10">--</span>
+                </div>
+            </div>
+        </div>
 
-        <p class="footer">数据源：Open-Meteo · 自动更新</p>
-      </section>
-    </main>
+        <!-- 温度趋势图 -->
+        <div class="chart-card">
+            <h3>温度趋势</h3>
+            <div class="chart-container">
+                <svg class="temp-chart" id="tempChart" viewBox="0 0 600 200" preserveAspectRatio="none">
+                    <!-- 动态生成图表 -->
+                </svg>
+            </div>
+            <div class="chart-labels" id="chartLabels">
+                <!-- 动态生成标签 -->
+            </div>
+        </div>
+
+        <!-- 未来天气预报 -->
+        <div class="forecast-card">
+            <h3>未来预报</h3>
+            <div class="forecast-list" id="forecastList">
+                <!-- 动态生成预报 -->
+            </div>
+        </div>
+
+        <!-- 页脚 -->
+        <footer class="footer">
+            <p>数据仅供参考 · 演示项目</p>
+        </footer>
+    </div>
 
     <script src="script.js"></script>
-  </body>
+</body>
 </html>
