@@ -8,7 +8,7 @@
 // ============================================
 
 const mockData = {
-    '北京': {
+    beijing: {
         city: '北京',
         country: '中国',
         temp: 22,
@@ -36,7 +36,7 @@ const mockData = {
         ],
         trend: [20, 22, 25, 23, 21, 19, 24, 22]
     },
-    'shanghai': {
+    shanghai: {
         city: '上海',
         country: '中国',
         temp: 19,
@@ -64,7 +64,7 @@ const mockData = {
         ],
         trend: [18, 19, 21, 20, 18, 22, 24, 20]
     },
-    '广州': {
+    guangzhou: {
         city: '广州',
         country: '中国',
         temp: 28,
@@ -92,7 +92,7 @@ const mockData = {
         ],
         trend: [27, 28, 29, 28, 27, 30, 32, 29]
     },
-    '成都': {
+    chengdu: {
         city: '成都',
         country: '中国',
         temp: 17,
@@ -120,7 +120,7 @@ const mockData = {
         ],
         trend: [15, 17, 19, 18, 16, 20, 23, 19]
     },
-    '哈尔滨': {
+    harbin: {
         city: '哈尔滨',
         country: '中国',
         temp: -3,
@@ -148,7 +148,7 @@ const mockData = {
         ],
         trend: [-5, -3, -2, -4, -1, 2, 5, 0]
     },
-    '深圳': {
+    shenzhen: {
         city: '深圳',
         country: '中国',
         temp: 29,
@@ -178,33 +178,36 @@ const mockData = {
     }
 };
 
-// 城市名映射
 const cityMapping = {
     '北京': 'beijing',
     'beijing': 'beijing',
+    'bj': 'beijing',
     '上海': 'shanghai',
     'shanghai': 'shanghai',
+    'sh': 'shanghai',
     '广州': 'guangzhou',
     'guangzhou': 'guangzhou',
+    'gz': 'guangzhou',
     '成都': 'chengdu',
     'chengdu': 'chengdu',
+    'cd': 'chengdu',
     '哈尔滨': 'harbin',
     'harbin': 'harbin',
+    'heb': 'harbin',
     '深圳': 'shenzhen',
-    'shenzhen': 'shenzhen'
+    'shenzhen': 'shenzhen',
+    'sz': 'shenzhen'
 };
 
-// AQI 等级配置
 const aqiLevels = [
     { max: 50, level: '优', advice: '空气很好，可以放心外出活动', class: 'aqi-1' },
     { max: 100, level: '良', advice: '空气质量可以接受，敏感人群减少户外活动', class: 'aqi-2' },
     { max: 150, level: '轻度污染', advice: '敏感人群应减少体力消耗大的户外活动', class: 'aqi-3' },
     { max: 200, level: '中度污染', advice: '对敏感人群不健康，应避免长时间户外运动', class: 'aqi-4' },
     { max: 300, level: '重度污染', advice: '避免户外活动，外出请佩戴口罩', class: 'aqi-5' },
-    { max: 999, level: '严重污染', advice: '健康警报：所有人应避免户外活动', class: 'aqi-6' }
+    { max: Infinity, level: '严重污染', advice: '健康警报：所有人应避免户外活动', class: 'aqi-6' }
 ];
 
-// 舒适度提示
 const comfortTips = [
     { min: -50, max: 0, tip: '寒冷刺骨，注意保暖' },
     { min: 0, max: 10, tip: '天气较冷，建议穿厚外套' },
@@ -292,7 +295,6 @@ const weatherIcons = {
     </svg>`
 };
 
-// 小型预报图标
 const smallIcons = {
     sunny: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>`,
     cloudy: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>`,
@@ -310,7 +312,7 @@ function getAQIInfo(aqi) {
 }
 
 function getComfortTip(temp) {
-    const tip = comfortTips.find(t => temp >= t.min && temp < t.max);
+    const tip = comfortTips.find(item => temp >= item.min && temp < item.max);
     return tip ? tip.tip : '注意天气变化';
 }
 
@@ -326,20 +328,55 @@ function getWeatherTheme(condition) {
 }
 
 function formatDate(date) {
-    const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
-    return date.toLocaleDateString('zh-CN', options);
+    return date.toLocaleDateString('zh-CN', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        weekday: 'long'
+    });
 }
 
 function formatTime(date) {
-    return date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+    return date.toLocaleTimeString('zh-CN', {
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+}
+
+function normalizeCityInput(input) {
+    return input.trim().toLowerCase();
+}
+
+function resolveCityKey(input) {
+    const normalized = normalizeCityInput(input);
+    if (!normalized) return null;
+    if (cityMapping[normalized]) return cityMapping[normalized];
+
+    return Object.keys(mockData).find(key => {
+        const record = mockData[key];
+        return record.city.toLowerCase() === normalized;
+    }) || null;
+}
+
+function getWeatherDescription(condition) {
+    const descriptions = {
+        sunny: '晴',
+        cloudy: '多云',
+        rainy: '雨',
+        snowy: '雪',
+        thunder: '雷暴'
+    };
+    return descriptions[condition] || '晴';
 }
 
 // ============================================
 // 状态管理
 // ============================================
 
-let currentCity = '北京';
+let currentCityKey = 'beijing';
 let isDarkMode = false;
+let clockTimer = null;
+let errorTimer = null;
 
 // ============================================
 // DOM 元素缓存
@@ -354,7 +391,6 @@ const elements = {
     weatherBg: document.getElementById('weatherBg'),
     particles: document.getElementById('particles'),
     themeToggle: document.getElementById('themeToggle'),
-    // 主卡片元素
     cityName: document.getElementById('cityName'),
     countryName: document.getElementById('countryName'),
     currentDate: document.getElementById('currentDate'),
@@ -373,7 +409,6 @@ const elements = {
     uvIndex: document.getElementById('uvIndex'),
     sunrise: document.getElementById('sunrise'),
     sunset: document.getElementById('sunset'),
-    // AQI 元素
     aqiBadge: document.getElementById('aqiBadge'),
     aqiValue: document.getElementById('aqiValue'),
     aqiLevel: document.getElementById('aqiLevel'),
@@ -382,7 +417,6 @@ const elements = {
     pm10: document.getElementById('pm10'),
     pm25Bar: document.getElementById('pm25Bar'),
     pm10Bar: document.getElementById('pm10Bar'),
-    // 图表和预报
     tempChart: document.getElementById('tempChart'),
     chartLabels: document.getElementById('chartLabels'),
     forecastList: document.getElementById('forecastList')
@@ -393,132 +427,102 @@ const elements = {
 // ============================================
 
 function renderWeather(data) {
-    // 更新背景主题
-    const themeClass = getWeatherTheme(data.condition);
-    document.body.className = themeClass;
-    
-    // 更新粒子效果
+    if (!data) return;
+
+    document.body.className = getWeatherTheme(data.condition);
     updateParticles(data.condition);
-    
-    // 更新基本信息
+
     elements.cityName.textContent = data.city;
     elements.countryName.textContent = data.country;
     elements.temperature.textContent = data.temp;
     elements.weatherDesc.textContent = data.description;
     elements.comfortTip.textContent = getComfortTip(data.temp);
-    
-    // 更新天气图标
     elements.weatherIcon.innerHTML = weatherIcons[data.condition] || weatherIcons.sunny;
-    
-    // 更新温度范围
+
     elements.tempHigh.textContent = data.high;
     elements.tempLow.textContent = data.low;
-    
-    // 更新详情
     elements.feelsLike.textContent = `${data.feelsLike}°`;
     elements.humidity.textContent = `${data.humidity}%`;
     elements.windSpeed.textContent = `${data.windSpeed} km/h`;
     elements.pressure.textContent = `${data.pressure} hPa`;
     elements.visibility.textContent = `${data.visibility} km`;
-    elements.uvIndex.textContent = data.uvIndex;
+    elements.uvIndex.textContent = `${data.uvIndex}`;
     elements.sunrise.textContent = data.sunrise;
     elements.sunset.textContent = data.sunset;
-    
-    // 更新日期时间
+
     const now = new Date();
     elements.currentDate.textContent = formatDate(now);
     elements.currentTime.textContent = formatTime(now);
-    
-    // 渲染 AQI
+
     renderAQI(data.aqi, data.pm25, data.pm10);
-    
-    // 渲染图表
     renderChart(data.trend);
-    
-    // 渲染预报
     renderForecast(data.forecast);
 }
 
 function renderAQI(aqi, pm25, pm10) {
     const aqiInfo = getAQIInfo(aqi);
-    
+
     elements.aqiValue.textContent = aqi;
     elements.aqiLevel.textContent = aqiInfo.level;
     elements.aqiAdvice.textContent = aqiInfo.advice;
     elements.pm25.textContent = pm25;
     elements.pm10.textContent = pm10;
-    
-    // 更新 AQI 徽章样式
     elements.aqiBadge.textContent = aqiInfo.level;
     elements.aqiBadge.className = `aqi-badge ${aqiInfo.class}`;
-    
-    // 更新进度条
-    elements.pm25Bar.style.width = `${Math.min(pm25 / 150 * 100, 100)}%`;
-    elements.pm10Bar.style.width = `${Math.min(pm10 / 150 * 100, 100)}%`;
+    elements.pm25Bar.style.width = `${Math.min((pm25 / 150) * 100, 100)}%`;
+    elements.pm10Bar.style.width = `${Math.min((pm10 / 150) * 100, 100)}%`;
 }
 
 function renderChart(trendData) {
-    if (!trendData || trendData.length === 0) return;
-    
+    if (!trendData?.length) return;
+
     const width = 600;
     const height = 200;
     const padding = 40;
     const chartWidth = width - padding * 2;
     const chartHeight = height - padding * 2;
-    
     const minTemp = Math.min(...trendData) - 2;
     const maxTemp = Math.max(...trendData) + 2;
-    const tempRange = maxTemp - minTemp;
-    
-    // 计算点的坐标
+    const tempRange = Math.max(maxTemp - minTemp, 1);
+
     const points = trendData.map((temp, index) => {
         const x = padding + (index / (trendData.length - 1)) * chartWidth;
         const y = height - padding - ((temp - minTemp) / tempRange) * chartHeight;
         return { x, y, temp };
     });
-    
-    // 生成折线路径
-    const linePath = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
-    
-    // 生成区域路径
+
+    const linePath = points.map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`).join(' ');
     const areaPath = `${linePath} L ${points[points.length - 1].x} ${height - padding} L ${points[0].x} ${height - padding} Z`;
-    
-    // 生成点和标签
-    const circles = points.map((p, i) => 
-        `<circle class="chart-point" cx="${p.x}" cy="${p.y}" style="animation-delay: ${i * 0.1}s"/>
-         <text class="chart-label" x="${p.x}" y="${p.y - 15}">${p.temp}°</text>`
-    ).join('');
-    
-    // 生成渐变定义
-    const defs = `
+    const circles = points.map((point, index) => `
+        <circle class="chart-point" cx="${point.x}" cy="${point.y}" style="animation-delay: ${index * 0.1}s"></circle>
+        <text class="chart-label" x="${point.x}" y="${point.y - 15}">${point.temp}°</text>
+    `).join('');
+
+    elements.tempChart.innerHTML = `
         <defs>
             <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
                 <stop offset="0%" style="stop-color:#FFD700;stop-opacity:1" />
                 <stop offset="100%" style="stop-color:#FF6B6B;stop-opacity:1" />
             </linearGradient>
             <linearGradient id="areaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" style="stop-color:#FFD700;stop-opacity:0.3" />
+                <stop offset="0%" style="stop-color:#FFD700;stop-opacity:0.32" />
                 <stop offset="100%" style="stop-color:#FF6B6B;stop-opacity:0.05" />
             </linearGradient>
         </defs>
-    `;
-    
-    elements.tempChart.innerHTML = `${defs}
-        <path class="chart-area" d="${areaPath}"/>
-        <path class="chart-line" d="${linePath}"/>
+        <path class="chart-area" d="${areaPath}"></path>
+        <path class="chart-line" d="${linePath}"></path>
         ${circles}
     `;
-    
-    // 生成时间标签
+
     const labels = ['06:00', '09:00', '12:00', '15:00', '18:00', '21:00', '00:00', '03:00'];
-    elements.chartLabels.innerHTML = labels.map((label, i) => 
-        `<div class="chart-label-item">${label}</div>`
-    ).join('');
+    elements.chartLabels.innerHTML = labels
+        .map(label => `<div class="chart-label-item">${label}</div>`)
+        .join('');
 }
 
 function renderForecast(forecastData) {
-    if (!forecastData || forecastData.length === 0) return;
-    
+    if (!forecastData?.length) return;
+
     elements.forecastList.innerHTML = forecastData.map((item, index) => {
         const icon = smallIcons[item.condition] || smallIcons.sunny;
         return `
@@ -535,116 +539,93 @@ function renderForecast(forecastData) {
     }).join('');
 }
 
-function getWeatherDescription(condition) {
-    const descriptions = {
-        sunny: '晴',
-        cloudy: '多云',
-        rainy: '雨',
-        snowy: '雪',
-        thunder: '雷暴'
-    };
-    return descriptions[condition] || '晴';
-}
-
 function updateParticles(condition) {
     const container = elements.particles;
     container.innerHTML = '';
-    
-    let particleCount = 20;
+
+    let particleCount = 15;
     let particleClass = 'particle';
-    
-    switch(condition) {
-        case 'snowy':
-            particleClass = 'snow-particle';
-            particleCount = 30;
-            break;
-        case 'rainy':
-        case 'thunder':
-            particleClass = 'rain-particle';
-            particleCount = 40;
-            break;
-        default:
-            particleClass = 'particle';
-            particleCount = 15;
+
+    if (condition === 'snowy') {
+        particleClass = 'snow-particle';
+        particleCount = 28;
+    } else if (condition === 'rainy' || condition === 'thunder') {
+        particleClass = 'rain-particle';
+        particleCount = 36;
     }
-    
-    for (let i = 0; i < particleCount; i++) {
+
+    for (let i = 0; i < particleCount; i += 1) {
         const particle = document.createElement('div');
-        particle.className = particleClass;
+        particle.className = `particle ${particleClass}`;
         particle.style.left = `${Math.random() * 100}%`;
         particle.style.width = `${Math.random() * 4 + 2}px`;
-        particle.style.height = particle.style.width;
+        particle.style.height = particleClass === 'rain-particle' ? `${Math.random() * 14 + 12}px` : particle.style.width;
         particle.style.animationDelay = `${Math.random() * 5}s`;
-        particle.style.animationDuration = `${Math.random() * 10 + 5}s`;
+        particle.style.animationDuration = particleClass === 'rain-particle'
+            ? `${Math.random() * 0.8 + 0.9}s`
+            : `${Math.random() * 8 + 6}s`;
         container.appendChild(particle);
     }
 }
 
 function showError(message) {
+    clearTimeout(errorTimer);
     elements.errorMsg.textContent = message;
     elements.errorMsg.classList.add('show');
-    setTimeout(() => {
+    errorTimer = setTimeout(() => {
         elements.errorMsg.classList.remove('show');
-    }, 3000);
+    }, 3200);
 }
 
 function showLoading() {
     elements.loadingOverlay.classList.add('show');
+    elements.loadingOverlay.setAttribute('aria-hidden', 'false');
 }
 
 function hideLoading() {
     elements.loadingOverlay.classList.remove('show');
+    elements.loadingOverlay.setAttribute('aria-hidden', 'true');
+}
+
+async function setCity(cityKey, delay = 520) {
+    const data = mockData[cityKey];
+    if (!data) {
+        showError('城市数据不存在');
+        return;
+    }
+
+    showLoading();
+    await new Promise(resolve => setTimeout(resolve, delay));
+
+    currentCityKey = cityKey;
+    renderWeather(data);
+    saveLastCity(cityKey);
+    hideLoading();
 }
 
 // ============================================
 // 交互逻辑层
 // ============================================
 
-function searchCity() {
+async function searchCity() {
     const input = elements.cityInput.value.trim();
     if (!input) {
         showError('请输入城市名称');
         return;
     }
-    
-    showLoading();
-    
-    // 模拟 API 延迟
-    setTimeout(() => {
-        const normalizedInput = input.toLowerCase();
-        let foundData = null;
-        
-        // 查找匹配的城市数据
-        for (const [key, data] of Object.entries(mockData)) {
-            if (key === normalizedInput || 
-                data.city === input || 
-                data.city.toLowerCase() === normalizedInput) {
-                foundData = data;
-                break;
-            }
-        }
-        
-        if (foundData) {
-            currentCity = foundData.city;
-            renderWeather(foundData);
-            saveLastCity(currentCity);
-            elements.cityInput.value = '';
-        } else {
-            showError(`未找到城市"${input}"，请尝试：北京、上海、广州、成都、哈尔滨、深圳`);
-        }
-        
-        hideLoading();
-    }, 500);
+
+    const cityKey = resolveCityKey(input);
+    if (!cityKey) {
+        showError(`未找到城市“${input}”，可试试：北京、上海、广州、成都、哈尔滨、深圳`);
+        return;
+    }
+
+    await setCity(cityKey, 480);
+    elements.cityInput.value = '';
 }
 
-function locateCurrent() {
-    showLoading();
-    setTimeout(() => {
-        currentCity = '北京';
-        renderWeather(mockData['beijing']);
-        saveLastCity(currentCity);
-        hideLoading();
-    }, 600);
+async function locateCurrent() {
+    await setCity('beijing', 600);
 }
 
 function toggleTheme() {
@@ -657,21 +638,19 @@ function toggleTheme() {
 // 本地存储
 // ============================================
 
-function saveLastCity(city) {
-    localStorage.setItem('lastWeatherCity', city);
+function saveLastCity(cityKey) {
+    localStorage.setItem('lastWeatherCity', cityKey);
 }
 
 function loadLastCity() {
     const saved = localStorage.getItem('lastWeatherCity');
-    return saved || '北京';
+    return saved && mockData[saved] ? saved : 'beijing';
 }
 
 function loadTheme() {
     const saved = localStorage.getItem('weatherTheme');
-    if (saved === 'dark') {
-        isDarkMode = true;
-        document.documentElement.setAttribute('data-theme', 'dark');
-    }
+    isDarkMode = saved === 'dark';
+    document.documentElement.setAttribute('data-theme', isDarkMode ? 'dark' : 'light');
 }
 
 // ============================================
@@ -680,52 +659,39 @@ function loadTheme() {
 
 function updateClock() {
     const now = new Date();
-    if (elements.currentTime) {
-        elements.currentTime.textContent = formatTime(now);
-    }
+    elements.currentDate.textContent = formatDate(now);
+    elements.currentTime.textContent = formatTime(now);
 }
 
 // ============================================
 // 初始化逻辑
 // ============================================
 
-function init() {
-    // 加载主题
-    loadTheme();
-    
-    // 加载上次访问的城市
-    const lastCity = loadLastCity();
-    
-    // 查找城市数据
-    let cityData = null;
-    for (const [key, data] of Object.entries(mockData)) {
-        if (data.city === lastCity) {
-            cityData = data;
-            break;
-        }
-    }
-    
-    // 默认显示北京
-    if (!cityData) {
-        cityData = mockData['beijing'];
-    }
-    
-    renderWeather(cityData);
-    
-    // 绑定事件
+function bindEvents() {
     elements.searchBtn.addEventListener('click', searchCity);
-    elements.cityInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') searchCity();
+    elements.cityInput.addEventListener('keydown', event => {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            searchCity();
+        }
     });
     elements.locationBtn.addEventListener('click', locateCurrent);
     elements.themeToggle.addEventListener('click', toggleTheme);
-    
-    // 启动时钟
-    setInterval(updateClock, 1000);
+}
+
+function init() {
+    loadTheme();
+    bindEvents();
+
+    const lastCityKey = loadLastCity();
+    currentCityKey = lastCityKey;
+    renderWeather(mockData[currentCityKey]);
+
     updateClock();
-    
+    clearInterval(clockTimer);
+    clockTimer = setInterval(updateClock, 1000);
+
     console.log('Weather Card initialized successfully');
 }
 
-// 页面加载完成后初始化
 document.addEventListener('DOMContentLoaded', init);

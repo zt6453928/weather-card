@@ -3,18 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="高颜值天气卡片与天气仪表盘，支持城市搜索、AQI、5日预报、温度趋势图与主题切换。">
     <title>Weather Card - 精致天气</title>
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="weather-bg" id="weatherBg"></div>
-    <div class="particles" id="particles"></div>
+    <div class="particles" id="particles" aria-hidden="true"></div>
     
     <div class="container">
         <!-- 主题切换 -->
-        <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <button class="theme-toggle" id="themeToggle" aria-label="切换主题" title="切换深浅色模式">
             <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="12" r="5"/>
                 <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
@@ -26,27 +28,27 @@
 
         <!-- 搜索区域 -->
         <div class="search-section">
-            <div class="search-box">
-                <input type="text" id="cityInput" placeholder="输入城市名称..." autocomplete="off">
-                <button class="search-btn" id="searchBtn" aria-label="搜索">
+            <div class="search-box" role="search" aria-label="城市天气搜索">
+                <input type="text" id="cityInput" placeholder="输入城市名称..." autocomplete="off" aria-label="输入城市名称搜索天气">
+                <button class="search-btn" id="searchBtn" aria-label="搜索城市天气" title="搜索">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="11" cy="11" r="8"/>
                         <path d="m21 21-4.35-4.35"/>
                     </svg>
                 </button>
-                <button class="location-btn" id="locationBtn" aria-label="定位">
+                <button class="location-btn" id="locationBtn" aria-label="回到默认城市" title="定位到默认城市">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
                         <circle cx="12" cy="10" r="3"/>
                     </svg>
                 </button>
             </div>
-            <div class="error-msg" id="errorMsg"></div>
+            <div class="error-msg" id="errorMsg" role="alert" aria-live="polite"></div>
         </div>
 
         <!-- 主天气卡片 -->
         <div class="main-card" id="mainCard">
-            <div class="loading-overlay" id="loadingOverlay">
+            <div class="loading-overlay" id="loadingOverlay" aria-hidden="true">
                 <div class="spinner"></div>
             </div>
             
@@ -62,7 +64,7 @@
             </div>
 
             <div class="weather-main">
-                <div class="weather-icon-container" id="weatherIcon">
+                <div class="weather-icon-container" id="weatherIcon" aria-hidden="true">
                     <!-- 动态插入天气图标 -->
                 </div>
                 <div class="temperature-section">
@@ -189,7 +191,7 @@
         <div class="chart-card">
             <h3>温度趋势</h3>
             <div class="chart-container">
-                <svg class="temp-chart" id="tempChart" viewBox="0 0 600 200" preserveAspectRatio="none">
+                <svg class="temp-chart" id="tempChart" viewBox="0 0 600 200" preserveAspectRatio="none" aria-label="未来温度趋势图">
                     <!-- 动态生成图表 -->
                 </svg>
             </div>
@@ -208,10 +210,11 @@
 
         <!-- 页脚 -->
         <footer class="footer">
-            <p>数据仅供参考 · 演示项目</p>
+            <p>数据仅供参考 · Mock Data 演示项目</p>
         </footer>
     </div>
 
     <script src="script.js"></script>
 </body>
 </html>
+
